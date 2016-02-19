@@ -1,0 +1,29 @@
+{
+  "name": "sosaria-online",
+  "version": "0.0.0",
+  "description": "An experimental Ultima Online shard emulator",
+  "main": "bin/server.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qbradq/Sosaria-Online.git"
+  },
+  "keywords": [
+    "Ultima",
+    "Online",
+    "Emulator"
+  ],
+  "author": "Norman B. Lancaster",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/qbradq/Sosaria-Online/issues"
+  },
+  "homepage": "https://github.com/qbradq/Sosaria-Online#readme",
+  "dependencies": {
+    "node-watch": "^0.3.5",
+    "require-reload": "^0.2.2",
+    "sansa": "^0.3.1"
+  }
+}
