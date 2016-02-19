@@ -48,6 +48,10 @@ PacketServer.prototype.start = function(){
     this.timer = setInterval(() => { this.processQueue(); }, 20);
 };
 
+PacketSErver.prototype.stop = function() {
+    clearInterval(this.timer);
+};
+
 PacketServer.prototype.queuePacket = function(event) {
     this.packetQueue.push(event);
 };
