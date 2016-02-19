@@ -15,11 +15,12 @@ exports.init = function(path){
 
 function write(type, msg){
     var now = (new Date()).toUTCString();
-    var line = now + "|" + type + "|" + msg + "\n";
+    var line = now + "|" + type + "|" + msg;
     console.log(line);
     if(fileLogger == null)
         return;
     fileLogger.write(line);
+    fileLogger.write("\n");
 };
 
 exports.info = (msg) => {

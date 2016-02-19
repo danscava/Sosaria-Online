@@ -6,10 +6,9 @@ module.exports = {
         prototype: undefined
     },
     master: {
-        logPath: "sosaria-online.log",
+        logPath: "master-server.log",
         host: "0.0.0.0",
         port: 2593,
-        dbPath: ["saves", "accounts.db"],
-        dbSaveInterval: 1 * 60 * 60 * 1000
+        dbPath: ["saves", "master"]
     },
 };

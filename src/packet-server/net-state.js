@@ -1,17 +1,25 @@
-var log = require("../log"),
+var uuid = require("uuid"),
+    log = require("../log"),
     PacketBuffer = require("./packet-buffer"),
     factory = require("./packets/packet-factory");
+
+var allStates = {};
 
 function NetState(socket, parent) {
     this.socket = socket;
     this.parent = parent;
+    this.uuid = uuid.v4();
     this.inbuf = new PacketBuffer();
     this.outbuf = new PacketBuffer();
     this.packet = null;
+    allStates[this.uuid] = this;
 };
 
 NetState.prototype.disconnect = function disconnect() {
-    this.socket.end();
+    if(this.socket !== null)
+        this.socket.end();
+    this.socket = null;
+    delete allStates[this.uuid];
 };
 
 NetState.prototype.handleData = function handleData(buf) {
@@ -37,10 +45,19 @@ NetState.prototype.handleData = function handleData(buf) {
 };
 
 NetState.prototype.sendPacket = function(packet) {
+    if(this.socket === null)
+        return;
     packet.netState = this;
     packet.encode(this.outbuf);
     this.socket.write(this.outbuf.activeSlice());
     this.outbuf.clear();
+};
+
+NetState.disconnectAll = function() {
+    for(var uuid in allStates) {
+        state = allStates[uuid];
+        state.disconnect();
+    }
 };
 
 module.exports = NetState;

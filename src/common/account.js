@@ -1,4 +1,4 @@
-var store = require("../store");
+var Store = require("../store");
 
 function Account() {
     this.name = "";
@@ -6,4 +6,4 @@ function Account() {
 };
 
 module.exports = Account;
-store.register("Common.Account", Account);
+Store.register("Account", Account);

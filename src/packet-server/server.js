@@ -41,15 +41,25 @@ PacketServer.prototype.start = function(){
         port: self.port,
         exclusive: true
     }, function() {
-        log.info("Server listening on " + self.host + ":" + self.port);
+        log.info("Packet server listening on " + self.host + ":" + self.port);
     });
     
     // 50 times per second stop all I/O and drain the packet queue
     this.timer = setInterval(() => { this.processQueue(); }, 20);
 };
 
-PacketSErver.prototype.stop = function() {
+PacketServer.prototype.stop = function(cb) {
+    log.info("Packet server stopping");
+    // Stop accepting new connections and disconnect clients
+    if(this.server !== null) {
+        this.server.on("close", cb);
+        this.server.close();
+    }
+    NetState.disconnectAll();
+    
+    // Drain the packet queue
     clearInterval(this.timer);
+    this.processQueue();
 };
 
 PacketServer.prototype.queuePacket = function(event) {

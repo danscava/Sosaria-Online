@@ -8,9 +8,9 @@ var crypto = require("crypto"),
 
 log.init(cfg.master.logPath);
 
-var accounts = null;
+var accounts = {};
+store.init(cfg.master.dbPath);
 var server = new packetServer(cfg.master.host, cfg.master.port);
-var timer = setInterval(() => { store.updateRoot(accounts); }, cfg.master.dbSaveInterval);
 
 server.on("login-seed", (packet) => {
     var req = cfg.requiredClientVersion;
@@ -38,6 +38,8 @@ server.on("login-request", (packet) => {
         account.name = packet.accountName;
         account.passHash = passHash;
         accounts[packet.accountName] = account;
+        store.put(account);
+        log.info("Creating new account " + packet.accountName);
     } else if(account.passHash != passHash) {
         log.info("Account " + accoun.name + " failed a login attempt");
         packet.netState.sendPacket(new LoginDeniedPacket(LoginDeniedPacket.ReasonCode.BadUserPass));
@@ -46,33 +48,25 @@ server.on("login-request", (packet) => {
     log.info("Account " + account.name + " successfuly logged in");
 });
 
-store.init(cfg.master.dbPath, () => {
-    store.getRoot((err, root) => {
-        if(root === null) {
-            accounts = {};
-        } else {
-            accounts = root;
-        }
-        server.start();
-    })
-});
-
-function atExit(doExit, err) {
+function atExit(err) {
     if(err)
         log.error("Error terminated process|" + err.stack);
     if(atExit.done)
         return;
-    atExit.done = true; 
-    log.info("AtExit!")
-    clearTimeout(timer);
-    store.updateRoot(accounts, () => {
+    atExit.done = true;
+    server.stop(() => {
         store.close();
-        if(doExit)
-            process.exit();
-    });       
+    });
 }
 atExit.done = false;
 
 process.on("exit", atExit.bind(null));
 process.on("SIGINT", atExit.bind(null));
 process.on("uncaughtException", atExit.bind(null));
+
+// Load accounts and start the server
+store.all((account) => {
+    accounts[account.name] = account;
+}, () => {
+    server.start();
+});

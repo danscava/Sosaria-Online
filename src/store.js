@@ -1,118 +1,35 @@
+"use strict";
+
 var fs = require("fs"),
     path = require("path"),
-    readline = require("readline"),
+    levelup = require("levelup"),
     sansa = require("sansa"),
     Arya = sansa.Arya,
     cfg = require("./config"),
     log = require("./log");
 
-var arya = new Arya();
-
-var dbPath = "",
-    items = {},
-    outStream = null,
-    rootUuid = null;
+var arya = new Arya(),
+    dbPath = "",
+    db = null;
 
 function init(dbp, cb) {
     if(Array.isArray(dbp))
         dbp = path.join.apply(path, dbp);
     dbPath = dbp;
-    items = {};
-    outStream = null;
-    
-    load(() => {
-        rewrite(() => {
-            cb();
-        });
-    });
-}
-
-function load(cb) {
-    // Load all JSON into memory
-    log.info("Loading storage database " + dbPath);
-    rootUuid = null;
-    var stream = fs.createReadStream(dbPath, {
-        flags: "r"
-    });
-    stream.on("error", (err) => {
-        cb();
-    });
-    var reader = readline.createInterface({
-        input: stream,
-        terminal: false
-    });
-    reader.on("line", (line) => {
-        var parts = line.split(" ", 2);
-        if(parts[0] === "root") {
-            rootUuid = parts[1];
-        } else {
-            items[parts[0]] = parts[1];            
-        }
-    });
-    reader.on("close", () => {
-        cb();
-    });
-}
-
-function rewrite(cb) {
-    log.info("Rewriting storage database " + dbPath);
-    
-    if(outStream != null)
-        outStream.close();
-    outStream = null;
-    
-    var backupPath = dbPath + ".backup";
-    fs.rename(dbPath, backupPath, () => {
-        openOutStream();
-        for(var key in items) {
-            if(!items.hasOwnProperty(key))
-                continue;
-            appendRecordToDatabase(key, items[key]);
-        }
-        if(rootUuid !== null)
-            appendRootUuid(rootUuid);
-        fs.unlink(backupPath, cb);
-    });
-}
-
-function openOutStream() {
-    var dirname = path.dirname(dbPath);
-    fs.mkdir(dirname, () => {
-        outStream = fs.createWriteStream(dbPath, {
-            flags: "a",
-        });
-    });
-}
-
-function appendRecordToDatabase(uuid, json) {
-    outStream.write(uuid);
-    outStream.write(" ");
-    outStream.write(json);
-    outStream.write("\n");
-}
-
-function appendRootUuid(uuid) {
-    outStream.write("root ");
-    outStream.write(uuid);
+    db = levelup(dbPath);
 }
 
 function writeRecord(uuid, json, cb) {
-    console.log("writeRecord " + uuid + " " + json);
-    items[uuid] = json;
-    appendRecordToDatabase(uuid, json);
-    cb();
+    db.put(uuid, json, {}, cb);
 }
 
 function loadRecord(uuid, cb) {
-    cb(null, itmes[uuid])
+    db.get(uuid, {}, cb);
 };
 
 function close() {
-    if(outStream !== null) {
-        outStream.end();
-        outStream.on("finish", () => {
-            console.log("finished");
-        });
+    if(db !== null) {
+        db.close();
     }
 }
 
@@ -123,28 +40,35 @@ function register(name, constr, proxy) {
         arya.register(name, constr);
 }
 
-function update(obj, cb) {
-    arya.save(obj, writeRecord, cb);
-}
-
-function updateRoot(obj, cb) {
-    arya.save(obj, writeRecord, (err, uuid) => {
-        rootUuid = uuid;
-        appendRootUuid(uuid);
-        cb();
-    });
-}
-
-function getRoot(cb) {
-    if(rootUuid === null)
-        cb(null, null);
+function put(obj, cb) {
+    if(cb)
+        arya.save(obj, writeRecord, cb);
     else
-        arya.load(rootUuid, loadRecord, cb)
+        arya.save(obj, writeRecord, (err, uuid) => {
+            if(err)
+                log.error("Error persisting object " + uuid);
+        });
+}
+
+function all(cb, done) {
+    var keyStream = db.createKeyStream({});
+    keyStream.on("data", (key) => {
+        arya.load(key, loadRecord, (err, obj) => {
+            if(err)
+                log.error("Error deserializing object|" + err.message);
+            else
+                cb(obj);
+        });
+    });
+    keyStream.on("end", done);
+    keyStream.on("error", (err) => {
+        log.error("Error while reading database keys from " + this.dbPath +
+            "|" + err.message);
+    });
 }
 
 exports.init = init;
 exports.close = close;
 exports.register = register;
-exports.update = update;
-exports.updateRoot = updateRoot;
-exports.getRoot = getRoot;
+exports.put = put;
+exports.all = all;
