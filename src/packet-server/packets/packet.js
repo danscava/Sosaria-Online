@@ -1,8 +1,8 @@
 function Packet() {
-    this.packetType = "bare";
     this.packetId = 0xFF;
     this.packetName = "none";
-    this.decodeComplete = false;
+    this.decoded = false;
+    this.encoded = false;
 };
 
 Packet.prototype.encode = function(buf) {  

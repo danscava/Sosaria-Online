@@ -1,3 +1,4 @@
+/*
 var net = require("net"),
     cfg = require("./config");
 
@@ -18,3 +19,8 @@ sock.on("connect", () => {
     buf.writeUInt8(93, ofs + 61);
     sock.write(buf);
 });
+*/
+
+var loader = require("./lib/loader");
+
+loader.loadDirectory("./src/packet-server");
