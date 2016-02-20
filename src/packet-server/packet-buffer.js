@@ -128,6 +128,10 @@ PacketBuffer.prototype.readUnicodeString = function(length) {
     return ret;
 };
 
+PacketBuffer.prototype.ignore = function(length) {
+    this.offset += length;
+};
+
 PacketBuffer.prototype.writeUInt8 = function(v) {
     this.buffer.writeUInt8(v, this.end);
     this.end += 1;

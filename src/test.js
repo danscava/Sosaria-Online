@@ -21,6 +21,8 @@ sock.on("connect", () => {
 });
 */
 
-var loader = require("./lib/loader");
+var gsl = require("./packet-server/packets/game-server-list"),
+    pb = require("./packet-server/packet-buffer");
 
-loader.loadDirectory("./src/packet-server");
+var g = new gsl();
+g.encode(new pb());

@@ -4,7 +4,9 @@ var crypto = require("crypto"),
     log = require("./log"),
     store = require("./store"),
     Account = require("./common/account");
-    LoginDeniedPacket = require("./packet-server/packets/login-denied");
+    LoginDeniedPacket = require("./packet-server/packets/login-denied"),
+    GameServerListPacket = require("./packet-server/packets/game-server-list"),
+    GameServerInfo = require("./common/game-server-info");
 
 log.init(cfg.master.logPath);
 
@@ -46,6 +48,17 @@ server.on("login-request", (packet) => {
         return;
     }
     log.info("Account " + account.name + " successfuly logged in");
+    var gsl = new GameServerListPacket();
+    for(var i = 0; i < cfg.master.servers.length; ++i) {
+        var server = cfg.master.servers[i];
+        var info = new GameServerInfo();
+        info.name = server.name;
+        info.playerLimit = server.limit;
+        info.gmtOffset = server.gmtOffset;
+        info.ipv4 = server.ipv4;
+        gsl.servers.push(info);
+    }
+    packet.netState.sendPacket(gsl);
 });
 
 function atExit(err) {

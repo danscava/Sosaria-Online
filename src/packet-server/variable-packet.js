@@ -7,7 +7,7 @@ function VariablePacket() {
 };
 util.inherits(VariablePacket, Packet);
 
-VariablePacket.prototype.decode = (buf) => {
+VariablePacket.prototype.decode = function(buf) {
     if(this.length < 0) {
         if(buf.length() < 2)
             return;
@@ -19,11 +19,11 @@ VariablePacket.prototype.decode = (buf) => {
     }
 };
 
-VariablePacket.prototype.variableDecode = (buf) => {
+VariablePacket.prototype.variableDecode = function(buf) {
     throw new Error("variableDecode() not overrided for packet " + this.packetName)
 };
 
-VariablePacket.prototype.encode = (buf) => {
+VariablePacket.prototype.encode = function(buf) {
     buf.writeUInt8(this.packetId);
     buf.writeUInt16(0); // Length placeholder
     this.variableEncode(buf);
@@ -32,7 +32,7 @@ VariablePacket.prototype.encode = (buf) => {
     this.encoded = true;
 };
 
-VariablePacket.prototype.variableEncode = (buf) => {
+VariablePacket.prototype.variableEncode = function(buf) {
     throw new Error("variableEncode() not overrided for packet " + this.packetName)
 };
 

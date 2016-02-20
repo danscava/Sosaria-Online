@@ -29,8 +29,10 @@ NetState.prototype.handleData = function handleData(buf) {
             break;
         if(this.packet === null) {
             this.packet = factory(this.inbuf);
-            if(this.packet === null)
+            if(this.packet === null) {
                 this.disconnect();
+                return;
+            }
             this.packet.netState = this;
         }
         this.packet.decode(this.inbuf);
