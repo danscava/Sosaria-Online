@@ -23,7 +23,6 @@ FixedPacket.prototype.fixedDecode = function(buf) {
 FixedPacket.prototype.encode = function(buf) {
     buf.writeUInt8(this.packetId);
     this.fixedEncode(buf);
-    this.encoded = true;
 };
 
 FixedPacket.prototype.fixedEncode = function(buf) {

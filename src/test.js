@@ -22,6 +22,7 @@ sock.on("connect", () => {
 */
 "use strict";
 
-var loader = require("./lib/loader");
+require("./lib/extensions");
 
-var factory = loader.constructorIdFactory("./src/packet-server/packets");
+var a = 12;
+console.log("0x" + a.toHex(2));

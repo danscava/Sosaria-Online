@@ -2,7 +2,7 @@
 
 var uuid = require("uuid"),
     PacketBuffer = require("./packet-buffer"),
-    factory = require("./packet-factory");
+    packets = require("./packets");
 
 var allStates = {};
 
@@ -28,14 +28,22 @@ NetState.prototype.handleData = function handleData(buf) {
     while(true) {
         if(this.inbuf.length() <= 0)
             break;
-        if(this.packet === null) {
-            this.packet = factory(this.inbuf);
+        if(this.packet === null && this.inbuf.length() > 0) {
+            var id = this.inbuf.readUInt8();
+            try {
+                this.packet = packets.createById(id);                
+            }
+            catch(e) {
+                log.error("Unsupported packet 0x" + id.toHex(2));
+            }
             if(this.packet === null) {
                 this.disconnect();
                 return;
             }
             this.packet.netState = this;
         }
+        if(this.packet === null)
+            break;
         this.packet.decode(this.inbuf);
         if(this.packet.decoded) {
             this.parent.queuePacket(this.packet);
@@ -58,7 +66,7 @@ NetState.prototype.sendPacket = function(packet) {
 
 NetState.disconnectAll = function() {
     for(var uuid in allStates) {
-        state = allStates[uuid];
+        var state = allStates[uuid];
         state.disconnect();
     }
 };

@@ -31,7 +31,6 @@ VariablePacket.prototype.encode = function(buf) {
     this.variableEncode(buf);
     var slice = buf.activeSlice();
     slice.writeUInt16BE(buf.length(), 1);
-    this.encoded = true;
 };
 
 VariablePacket.prototype.variableEncode = function(buf) {

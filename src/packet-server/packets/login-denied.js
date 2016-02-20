@@ -11,7 +11,7 @@ function LoginDeniedPacket(reason) {
     if(typeof reason !== "undefined")
         this.reason = reason;
     else
-        this.reason = LoginDeniedPacket.ReasonCode.BadCommunication;
+        this.reason = 4; // Bad communications
 }
 util.inherits(LoginDeniedPacket, FixedPacket);
 LoginDeniedPacket.id = 0x82;
@@ -20,15 +20,15 @@ LoginDeniedPacket.prototype.fixedEncode = function(buf) {
     buf.writeUInt8(this.reason);
 };
 
-LoginDeniedPacket.ReasonCode = {
-    BadUserPass: 0,
-    InUse: 1,
-    Blocked: 2,
-    Invalid: 3,
-    BadCommunication: 4,
-    IGRConcurrency: 5,
-    IGRLimit: 6,
-    IGRAuth: 7
-};
+/* Reason Codes
+0 Bad username or password
+1 Account in use
+2 Account blocked
+3 Invalid account credentials
+4 Bad communications
+5 IGR concurrency limit met
+6 IGR time limit met
+7 IGR authorization error
+*/
 
 module.exports = LoginDeniedPacket;
