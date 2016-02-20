@@ -5,21 +5,10 @@ var crypto = require("crypto"),
     log = require("../lib/log"),
     store = require("../lib/store"),
     Account = require("../common/account"),
-    GameServerInfo = require("../common/game-server-info"),
     packets = require("../packet-server/packets");
 
 var accounts = {};
-var servers = [];
-for(var i = 0; i < cfg.servers.length; ++i) {
-    let serverName = cfg.servers[i];
-    let server = require("../../config/" + serverName);
-    let info = new GameServerInfo();
-    info.name = server.name;
-    info.playerLimit = server.limit;
-    info.gmtOffset = server.gmtOffset;
-    info.ipv4 = server.ipv4;
-    servers.push(info);
-}
+var servers;
 
 function loginSeed(packet) {
     var req = cfg.requiredClientVersion;
@@ -62,7 +51,8 @@ function loginRequest(packet) {
     packet.netState.sendPacket(gsl);
 }
 
-module.exports = function(server) {
+module.exports = function(server, serverInfo) {
+    servers = serverInfo;
     store.all((account) => {
         accounts[account.name] = account;
     }, () => {
