@@ -1,3 +1,5 @@
+"use strict";
+
 function PacketBuffer() {
     this.buffer = new Buffer(64 * 1024);
     this.offset = 0;

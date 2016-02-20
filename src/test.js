@@ -20,9 +20,8 @@ sock.on("connect", () => {
     sock.write(buf);
 });
 */
+"use strict";
 
-var gsl = require("./packet-server/packets/game-server-list"),
-    pb = require("./packet-server/packet-buffer");
+var loader = require("./lib/loader");
 
-var g = new gsl();
-g.encode(new pb());
+var factory = loader.constructorIdFactory("./src/packet-server/packets");

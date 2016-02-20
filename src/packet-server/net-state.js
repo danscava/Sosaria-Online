@@ -1,3 +1,5 @@
+"use strict";
+
 var uuid = require("uuid"),
     PacketBuffer = require("./packet-buffer"),
     factory = require("./packet-factory");

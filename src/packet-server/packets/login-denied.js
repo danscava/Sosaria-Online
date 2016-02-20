@@ -1,3 +1,5 @@
+"use strict";
+
 var FixedPacket = require("../fixed-packet"),
     util = require("util");
 

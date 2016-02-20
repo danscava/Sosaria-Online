@@ -1,3 +1,5 @@
+"use strict";
+
 var VariablePacket = require("../variable-packet"),
     util = require("util");
 

@@ -1,3 +1,5 @@
+"use strict";
+
 var Store = require("../lib/store");
 
 function Account() {

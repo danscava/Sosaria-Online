@@ -1,3 +1,5 @@
+"use strict";
+
 var Packet = require("./packet"),
     util = require("util");
 

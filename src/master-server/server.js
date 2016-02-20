@@ -1,3 +1,5 @@
+"use strict";
+
 var crypto = require("crypto"),
     packetServer = require("../packet-server/server.js"),
     cfg = require("../config"),

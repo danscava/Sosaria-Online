@@ -1,3 +1,5 @@
+"use strict";
+
 function GameServerInfo() {
     this.name = "Unamed Game Server";
     this.playerLimit = 100;

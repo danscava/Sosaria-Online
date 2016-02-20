@@ -1,3 +1,5 @@
+"use strict";
+
 function Packet() {
     this.packetId = 0xFF;
     this.packetName = "none";
