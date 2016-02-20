@@ -17,6 +17,7 @@ function loadDirectory(dir, recursive) {
         else if(stat.isFile())
             modules.push(require(fullPath));
     }
+    return modules;
 }
 
 exports.loadDirectory = loadDirectory;

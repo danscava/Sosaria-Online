@@ -1,4 +1,4 @@
-var FixedPacket = require("./fixed-packet"),
+var FixedPacket = require("../fixed-packet"),
     util = require("util");
 
 function LoginRequestPacket() {
@@ -8,6 +8,7 @@ function LoginRequestPacket() {
     this.length = 61;
 }
 util.inherits(LoginRequestPacket, FixedPacket);
+LoginRequestPacket.id = 0x80;
 
 LoginRequestPacket.prototype.fixedDecode = function(buf) {
     this.accountName = buf.readAsciiString(30);

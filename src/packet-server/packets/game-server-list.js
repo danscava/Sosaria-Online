@@ -1,4 +1,4 @@
-var VariablePacket = require("./variable-packet"),
+var VariablePacket = require("../variable-packet"),
     util = require("util");
 
 function GameServerListPacket() {
@@ -7,5 +7,6 @@ function GameServerListPacket() {
     this.packetName = "game-server-list";
 }
 util.inherits(GameServerListPacket, VariablePacket);
+GameServerListPacket.id = 0xA8;
 
 module.exports = GameServerListPacket;

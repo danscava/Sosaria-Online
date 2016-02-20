@@ -1,7 +1,7 @@
 var uuid = require("uuid"),
     log = require("../log"),
     PacketBuffer = require("./packet-buffer"),
-    factory = require("./packets/packet-factory");
+    factory = require("./packet-factory");
 
 var allStates = {};
 

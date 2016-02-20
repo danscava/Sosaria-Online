@@ -1,4 +1,4 @@
-var FixedPacket = require("./fixed-packet"),
+var FixedPacket = require("../fixed-packet"),
     util = require("util");
 
 function LoginDeniedPacket(reason) {
@@ -12,6 +12,7 @@ function LoginDeniedPacket(reason) {
         this.reason = LoginDeniedPacket.ReasonCode.BadCommunication;
 }
 util.inherits(LoginDeniedPacket, FixedPacket);
+LoginDeniedPacket.id = 0x82;
 
 LoginDeniedPacket.prototype.fixedEncode = function(buf) {
     buf.writeUInt8(this.reason);

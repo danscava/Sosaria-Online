@@ -1,4 +1,4 @@
-var FixedPacket = require("./fixed-packet"),
+var FixedPacket = require("../fixed-packet"),
     util = require("util");
 
 function LoginSeedPacket() {
@@ -8,6 +8,7 @@ function LoginSeedPacket() {
     this.length = 20;
 }
 util.inherits(LoginSeedPacket, FixedPacket);
+LoginSeedPacket.id = 0xEF;
 
 LoginSeedPacket.prototype.fixedDecode = function(buf) {
     this.encryptionSeed = buf.readUInt32();
