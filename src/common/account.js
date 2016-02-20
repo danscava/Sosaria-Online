@@ -1,4 +1,4 @@
-var Store = require("../store");
+var Store = require("../lib/store");
 
 function Account() {
     this.name = "";

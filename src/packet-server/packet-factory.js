@@ -1,4 +1,4 @@
-var log = require("../log");
+var log = require("../lib/log");
     loader = require("../lib/loader");
 
 var packets = {};

@@ -1,7 +1,7 @@
 var net = require("net"),
     EventEmitter = require("events"),
     util = require("util"),
-    log = require("../log"),
+    log = require("../lib/log"),
     NetState = require("./net-state");
 
 function PacketServer(host, port){

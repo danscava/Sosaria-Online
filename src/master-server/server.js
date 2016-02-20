@@ -1,12 +1,12 @@
 var crypto = require("crypto"),
-    packetServer = require("./packet-server/server.js"),
-    cfg = require("./config"),
-    log = require("./log"),
-    store = require("./store"),
-    Account = require("./common/account");
-    LoginDeniedPacket = require("./packet-server/packets/login-denied"),
-    GameServerListPacket = require("./packet-server/packets/game-server-list"),
-    GameServerInfo = require("./common/game-server-info");
+    packetServer = require("../packet-server/server.js"),
+    cfg = require("../config"),
+    log = require("../lib/log"),
+    store = require("../lib/store"),
+    Account = require("../common/account");
+    LoginDeniedPacket = require("../packet-server/packets/login-denied"),
+    GameServerListPacket = require("../packet-server/packets/game-server-list"),
+    GameServerInfo = require("../common/game-server-info");
 
 log.init(cfg.master.logPath);
 

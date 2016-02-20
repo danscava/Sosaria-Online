@@ -1,5 +1,4 @@
 var uuid = require("uuid"),
-    log = require("../log"),
     PacketBuffer = require("./packet-buffer"),
     factory = require("./packet-factory");
 
