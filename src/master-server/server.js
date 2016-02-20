@@ -3,13 +3,13 @@
 require("../lib/extensions");
 
 var packetServer = require("../packet-server/server.js"),
-    cfg = require("../../config"),
+    cfg = require("../lib/config"),
     log = require("../lib/log"),
     store = require("../lib/store");
 
-log.init(cfg.master.logPath);
-store.init(cfg.master.dbPath);
-var server = new packetServer(cfg.master.host, cfg.master.port);
+log.init(cfg.logPath);
+store.init(cfg.dbPath);
+var server = new packetServer(cfg.ipv4, cfg.port);
 
 function atExit(err) {
     if(err)

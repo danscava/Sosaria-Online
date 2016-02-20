@@ -165,12 +165,16 @@ PacketBuffer.prototype.writeInt32 = function(v) {
 };
 
 PacketBuffer.prototype.writeAsciiString = function(v, length) {
-    this.buffer.write(v, this.end, length, "ascii");
+    var writeLength = Buffer.byteLength(v, "ascii");
+    this.buffer.write(v, this.end, writeLength, "ascii");
+    this.buffer.fill(0, this.end + writeLength, this.end + length);
     this.end += length;
 }
 
 PacketBuffer.prototype.writeUnicodeString = function(v, length) {
+    var writeLength = Buffer.byteLength(v, "utf16");
     this.buffer.write(v, this.end, length, "utf16");
+    this.buffer.fill(0, this.end + writeLength, this.end + length);
     this.end += length;
 }
 

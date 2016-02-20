@@ -6,9 +6,9 @@ var net = require("net"),
     log = require("../lib/log"),
     NetState = require("./net-state");
 
-function PacketServer(host, port){
+function PacketServer(ipv4, port){
     EventEmitter.call(this);
-    this.host = host;
+    this.host = ipv4.join(".");
     this.port = port;
     this.server = null;
     this.packetQueue = [];

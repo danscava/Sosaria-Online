@@ -1,7 +1,7 @@
 "use strict";
 
 var crypto = require("crypto"),
-    cfg = require("../../config"),
+    cfg = require("../lib/config"),
     log = require("../lib/log"),
     store = require("../lib/store"),
     Account = require("../common/account"),
@@ -10,12 +10,9 @@ var crypto = require("crypto"),
 
 var accounts = {};
 var servers = [];
-for(var i = 0; i < cfg.master.servers.length; ++i) {
-    let serverName = cfg.master.servers[i];
-    let server = cfg[serverName];
-    if(!server) {
-        throw new Error("No configuration found for server " + serverName);
-    }
+for(var i = 0; i < cfg.servers.length; ++i) {
+    let serverName = cfg.servers[i];
+    let server = require("../../config/" + serverName);
     let info = new GameServerInfo();
     info.name = server.name;
     info.playerLimit = server.limit;
@@ -25,7 +22,7 @@ for(var i = 0; i < cfg.master.servers.length; ++i) {
 }
 
 function loginSeed(packet) {
-    var req = cfg.master.requiredClientVersion;
+    var req = cfg.requiredClientVersion;
     var clv = packet.clientVersion;
     if(typeof req.major !== "undefined" && clv.major !== req.major ||
         typeof req.minor !== "undefined" && clv.minor !== req.minor ||
