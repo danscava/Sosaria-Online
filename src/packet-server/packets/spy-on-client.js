@@ -1,6 +1,7 @@
 "use strict";
 
 var FixedPacket = require("../fixed-packet"),
+    log = require("../../lib/log"),
     util = require("util");
 
 function SpyOnClientPacket() {
@@ -13,6 +14,7 @@ util.inherits(SpyOnClientPacket, FixedPacket);
 SpyOnClientPacket.id = 0xD9;
 
 SpyOnClientPacket.prototype.fixedDecode = function(buf) {
+    log.info("Spy on Client packet");
     buf.ignore(this.length);
 };
 

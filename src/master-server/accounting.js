@@ -1,7 +1,7 @@
 "use strict";
 
 var crypto = require("crypto"),
-    cfg = require("../config"),
+    cfg = require("../../config"),
     log = require("../lib/log"),
     store = require("../lib/store"),
     Account = require("../common/account"),
@@ -9,9 +9,23 @@ var crypto = require("crypto"),
     packets = require("../packet-server/packets");
 
 var accounts = {};
+var servers = [];
+for(var i = 0; i < cfg.master.servers.length; ++i) {
+    let serverName = cfg.master.servers[i];
+    let server = cfg[serverName];
+    if(!server) {
+        throw new Error("No configuration found for server " + serverName);
+    }
+    let info = new GameServerInfo();
+    info.name = server.name;
+    info.playerLimit = server.limit;
+    info.gmtOffset = server.gmtOffset;
+    info.ipv4 = server.ipv4;
+    servers.push(info);
+}
 
 function loginSeed(packet) {
-    var req = cfg.requiredClientVersion;
+    var req = cfg.master.requiredClientVersion;
     var clv = packet.clientVersion;
     if(typeof req.major !== "undefined" && clv.major !== req.major ||
         typeof req.minor !== "undefined" && clv.minor !== req.minor ||
@@ -45,18 +59,11 @@ function loginRequest(packet) {
     }
     log.info("Account " + account.name + " successfuly logged in");
     var gsl = packets.create("GameServerListPacket");
-    for(var i = 0; i < cfg.master.servers.length; ++i) {
-        var server = cfg.master.servers[i];
-        var info = new GameServerInfo();
-        info.name = server.name;
-        info.playerLimit = server.limit;
-        info.gmtOffset = server.gmtOffset;
-        info.ipv4 = server.ipv4;
-        gsl.servers.push(info);
+    for(let server of servers) {
+        gsl.servers.push(server);
     }
     packet.netState.sendPacket(gsl);
 }
-
 
 module.exports = function(server) {
     store.all((account) => {

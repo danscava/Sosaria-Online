@@ -28,7 +28,11 @@ PacketServer.prototype.start = function(){
         });
         
         socket.on("data", (chunk) => {
-            state.handleData(chunk);
+            try {
+                state.handleData(chunk);                
+            } catch(e) {
+                log.error("Exception while processing data|" + e.stack);
+            }
         });
         
         socket.on("end", (socket) => {
@@ -74,7 +78,7 @@ PacketServer.prototype.processQueue = function() {
         try {
             this.emit(packet.packetName, packet);            
         } catch(e) {
-            log.error("Error in packet handler " + packet.packetName + "|" + e.message);
+            log.error("Error in packet handler " + packet.packetName + "|" + e.stack);
         }
     }
 };

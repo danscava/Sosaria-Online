@@ -3,7 +3,7 @@
 require("../lib/extensions");
 
 var packetServer = require("../packet-server/server.js"),
-    cfg = require("../config"),
+    cfg = require("../../config"),
     log = require("../lib/log"),
     store = require("../lib/store");
 

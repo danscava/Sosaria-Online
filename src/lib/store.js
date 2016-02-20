@@ -5,7 +5,6 @@ var fs = require("fs"),
     levelup = require("levelup"),
     sansa = require("sansa"),
     Arya = sansa.Arya,
-    cfg = require("../config"),
     log = require("./log");
 
 var arya = new Arya(),

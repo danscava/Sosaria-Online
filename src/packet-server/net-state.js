@@ -1,6 +1,7 @@
 "use strict";
 
 var uuid = require("uuid"),
+    log = require("../lib/log"),
     PacketBuffer = require("./packet-buffer"),
     packets = require("./packets");
 
