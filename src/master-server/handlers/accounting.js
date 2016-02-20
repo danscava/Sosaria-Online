@@ -1,14 +1,14 @@
 "use strict";
 
 var crypto = require("crypto"),
-    cfg = require("../lib/config"),
-    log = require("../lib/log"),
-    store = require("../lib/store"),
-    Account = require("../common/account"),
-    packets = require("../packet-server/packets");
+    cfg = require("../../lib/config"),
+    log = require("../../lib/log"),
+    store = require("../../lib/store"),
+    Account = require("../../common/account"),
+    packets = require("../../packet-server/packets"),
+    servers = require("../server-info");
 
 var accounts = {};
-var servers;
 
 function loginSeed(packet) {
     var req = cfg.requiredClientVersion;
@@ -51,8 +51,7 @@ function loginRequest(packet) {
     packet.netState.sendPacket(gsl);
 }
 
-module.exports = function(server, serverInfo) {
-    servers = serverInfo;
+module.exports = function(server) {
     store.all((account) => {
         accounts[account.name] = account;
     }, () => {
