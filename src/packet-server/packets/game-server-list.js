@@ -3,6 +3,13 @@
 var VariablePacket = require("../variable-packet"),
     util = require("util");
 
+/** A packet that communicates the list of available game servers to the client.
+ * This packet is only sent by the master server to the client.
+ * 
+ * @event PacketServer#packet-game-server-list
+ * @type {object}
+ * @property {array} servers The list of servers as GameInfo objects
+ */
 function GameServerListPacket() {
     VariablePacket.call(this);
     this.packetId = 0xA8;

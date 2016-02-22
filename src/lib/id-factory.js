@@ -25,8 +25,7 @@ IdFactory.prototype.createById = function(id) {
     if(ctor === undefined)
         throw new Error("No module found for ID " + id);
     if(arguments.length > 1) {
-        var args = Array.apply(null, arguments);
-        return new (Function.prototype.bind.apply(ctor, args.slice(1)));
+        throw new Error("IdFactory.create() called with constructor arguments");
     }
     return new ctor();
 }

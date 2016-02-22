@@ -11,6 +11,8 @@ var crypto = require("crypto"),
 var accounts = {};
 
 function loginSeed(packet) {
+    if(packet.netState.isAuthenticated)
+        throw new Error("Invalid state, recieved client version after authentication");
     var req = cfg.requiredClientVersion;
     var clv = packet.clientVersion;
     if(typeof req.major !== "undefined" && clv.major !== req.major ||
@@ -19,14 +21,19 @@ function loginSeed(packet) {
         typeof req.prototype !== "undefined" && clv.prototype !== req.prototype) {
         log.info("Client connection rejected due to incompatible client version " +
             clv.major + "." + clv.minor + "." + clv.revision + "." + clv.prototype);
-        packet.netState.sendPacket(packets.create("LoginDeniedPacket", 4)); // Bad communication
+        var response = packets.create("LoginDeniedPacket");
+        response.reason = 4; // Bad communications
+        packet.netState.sendPacket();
     } else {
         log.info("Client connected with version " +
             clv.major + "." + clv.minor + "." + clv.revision + "." + clv.prototype);
+        packet.netState.isClientVersionOk = true;
     }    
 }
 
 function loginRequest(packet) {
+    if(!packet.netState.isClientVersionOk)
+        throw new Error("Invalid state, client version not valid prior to login request");
     var hash = crypto.createHash("sha256");
     hash.update(packet.accountPass);
     var passHash = hash.digest("hex");
@@ -44,6 +51,7 @@ function loginRequest(packet) {
         return;
     }
     log.info("Account " + account.name + " successfuly logged in");
+    packet.netState.isAuthenticated = true;
     var gsl = packets.create("GameServerListPacket");
     for(let server of servers) {
         gsl.servers.push(server);
@@ -52,6 +60,8 @@ function loginRequest(packet) {
 }
 
 module.exports = function(server) {
+    // We don't attach to server events until after all account info is loaded
+    // to avoid race conditions.
     store.all((account) => {
         accounts[account.name] = account;
     }, () => {

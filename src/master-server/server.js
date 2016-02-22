@@ -25,9 +25,9 @@ function atExit(err) {
 }
 atExit.done = false;
 
-process.on("exit", atExit.bind(null));
-process.on("SIGINT", atExit.bind(null));
-process.on("uncaughtException", atExit.bind(null));
+process.on("exit", atExit);
+process.on("SIGINT", atExit);
+process.on("uncaughtException", atExit);
 
 handlers.subscribe(server);
 

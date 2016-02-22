@@ -1,27 +1,16 @@
 "use strict";
 
-var uuid = require("uuid"),
-    log = require("../lib/log"),
+var log = require("../lib/log"),
     PacketBuffer = require("./packet-buffer"),
     packets = require("./packets");
-
-var allStates = {};
 
 function NetState(socket, parent) {
     this.socket = socket;
     this.parent = parent;
-    this.uuid = uuid.v4();
     this.inbuf = new PacketBuffer();
     this.outbuf = new PacketBuffer();
     this.packet = null;
     allStates[this.uuid] = this;
-};
-
-NetState.prototype.disconnect = function disconnect() {
-    if(this.socket !== null)
-        this.socket.end();
-    this.socket = null;
-    delete allStates[this.uuid];
 };
 
 NetState.prototype.handleData = function handleData(buf) {
@@ -38,7 +27,7 @@ NetState.prototype.handleData = function handleData(buf) {
                 log.error("Unsupported packet 0x" + id.toHex(2));
             }
             if(this.packet === null) {
-                this.disconnect();
+                this.parent.disconnect(this);
                 return;
             }
             this.packet.netState = this;
@@ -63,13 +52,6 @@ NetState.prototype.sendPacket = function(packet) {
     packet.encode(this.outbuf);
     this.socket.write(this.outbuf.activeSlice());
     this.outbuf.clear();
-};
-
-NetState.disconnectAll = function() {
-    for(var uuid in allStates) {
-        var state = allStates[uuid];
-        state.disconnect();
-    }
 };
 
 module.exports = NetState;

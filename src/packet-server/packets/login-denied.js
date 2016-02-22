@@ -3,15 +3,12 @@
 var FixedPacket = require("../fixed-packet"),
     util = require("util");
 
-function LoginDeniedPacket(reason) {
+function LoginDeniedPacket() {
     FixedPacket.call(this);
     this.packetId = 0x82;
     this.packetName = "login-denied";
     this.length = 1;
-    if(typeof reason !== "undefined")
-        this.reason = reason;
-    else
-        this.reason = 4; // Bad communications
+    this.reason = 4; // Bad communications
 }
 util.inherits(LoginDeniedPacket, FixedPacket);
 LoginDeniedPacket.id = 0x82;
