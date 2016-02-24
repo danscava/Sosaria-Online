@@ -10,8 +10,31 @@ var serviceName = process.argv[2];
 
 require("./src/lib/config")(serviceName);
 
+var Server;
+
 if(serviceName === "master") {
-    require("./src/master-server/server");
+    Server = require("./src/master-server/master-server");
 } else {
     // TODO
 }
+
+if(typeof Server !== "function") {
+    console.log("Invalid server module " + serviceName);
+    throw 2;
+}
+
+var server = new Server();
+
+function atExit(err) {
+    if(err)
+        log.error("Error terminated process|" + err.stack);
+    if(atExit.done)
+        return;
+    atExit.done = true;
+    server.stop();
+}
+atExit.done = false;
+
+process.on("exit", atExit);
+process.on("SIGINT", atExit);
+process.on("uncaughtException", atExit);

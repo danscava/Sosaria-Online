@@ -7,6 +7,8 @@ var fileLogger = null;
 exports.init = function(path){
     if(fileLogger != null)
         fileLogger.end();
+    if(!path)
+        return;
     fileLogger = fs.createWriteStream(path, {
         flags: "a",
         defaultEncoding: "utf8",

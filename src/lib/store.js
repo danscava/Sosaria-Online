@@ -2,6 +2,7 @@
 
 var fs = require("fs"),
     path = require("path"),
+    uuid = require("uuid"),
     levelup = require("levelup"),
     sansa = require("sansa"),
     Arya = sansa.Arya,
@@ -15,7 +16,8 @@ function init(dbp, cb) {
     if(Array.isArray(dbp))
         dbp = path.join.apply(path, dbp);
     dbPath = dbp;
-    db = levelup(dbPath);
+    if(dbPath)
+        db = levelup(dbPath);
 }
 
 function writeRecord(uuid, json, cb) {
@@ -40,6 +42,11 @@ function register(name, constr, proxy) {
 }
 
 function put(obj, cb) {
+    if(!db)
+        if(cb)
+            return cb(null, uuid.v4);
+        else
+            return;
     if(cb)
         arya.save(obj, writeRecord, cb);
     else
@@ -50,6 +57,8 @@ function put(obj, cb) {
 }
 
 function all(cb, done) {
+    if(!db)
+        return done();
     var keyStream = db.createKeyStream({});
     keyStream.on("data", (key) => {
         arya.load(key, loadRecord, (err, obj) => {

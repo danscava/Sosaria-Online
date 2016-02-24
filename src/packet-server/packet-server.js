@@ -36,7 +36,7 @@ PacketServer.prototype.start = function(){
         var state = new NetState(socket, self);
         socket.netState = state;
         state.uuid = uuid.v4();
-        netStates[uuid] = state;
+        this.netStates[uuid] = state;
         
         this.emit("netstate-connected", state);
         
@@ -111,10 +111,33 @@ PacketServer.prototype.disconnect = function(netstate) {
     try { delete this.netStates[netstate.uuid]; } catch(e) {}
 };
 
+/** Establishes a client connection to a server.
+ * 
+ * @param {Number[]} ipv4 The IPv4 address of the desitnation server
+ * @param {Number}   port The port the destination server is listening on
+ * @returns {NetState} The NetState object representing the client connection
+ */
+PacketServer.prototype.connect = function(ipv4, port) {
+    var socket = net.connect(ipv4.join("."), port);
+    var state = new NetState(socket, this);
+    socket.netState = state;
+    state.isClient = true;
+    state.uuid = uuid.v4();
+    this.netStates[state.uuid] = state;
+    return state;
+};
+
+/** Queues a single client packet object onto the queue of packets to be
+ * emitted as events.
+ * 
+ * @param {object} event The packet object
+ */
 PacketServer.prototype.queuePacket = function(event) {
     this.packetQueue.push(event);
 };
 
+/** Processes the entire pending client packet queue.
+ */
 PacketServer.prototype.processQueue = function() {
     while(this.packetQueue.length > 0) {
         var packet = this.packetQueue.shift();
