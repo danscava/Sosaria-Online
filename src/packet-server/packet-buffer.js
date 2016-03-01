@@ -248,7 +248,7 @@ PacketBuffer.prototype.writeUInt32 = function(v) {
  * @param {Number} v The number to write
  */
 PacketBuffer.prototype.writeInt32 = function(v) {
-    this.buffer.writeInt32BE(v, his.end);
+    this.buffer.writeInt32BE(v, this.end);
     this.end += 4;
 };
 

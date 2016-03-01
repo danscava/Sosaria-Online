@@ -1,24 +1,28 @@
-require("../src/lib/config")("../test/integration/master-config");
-var MasterServer = require("../src/master-server/master-server"),
-    PacketServer = require("../src/packet-server/packet-server"),
-    cfg = require("../src/lib/config"),
-    packets = require("../src/packet-server/packets");
+require("../../../src/lib/config")("../test/integration/master-config");
+//require("../../packet-server-spy");
+var MasterServer = require("../../../src/master-server/master-server"),
+    Client = require("../../client"),
+    cfg = require("../../../src/lib/config");
 
 describe("Login Process", function() {
     var master, client;
     
-    function beforeEach() {
+    beforeEach(function(){
         master = new MasterServer();
         master.start();
-        client = master.connect(cfg.ipv4, cfg.port);
-    }
+        spyOn(master.server, "emit");
+        client = new Client(cfg.ipv4, cfg.port);
+        spyOn(client.server, "emit");
+    });
     
-    function afterEach() {
+    afterEach(function(){
+        client.disconnect();
         master.stop();
-        master.disconnect(client);
-    }
+    });
     
     it("Can create a new account", function() {
-        var 
+        client.login("test", "asdf", 7, 0, 47, 0);
+//      master._expectEvent("accountCreated", 1);
+        
     });
 });

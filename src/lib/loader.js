@@ -3,6 +3,16 @@
 var fs = require("fs"),
     path = require("path");
 
+/** Provides convenience methods for loading modules.
+ * @module {Function} Loader
+ */
+
+/** Loads all modules within a directory as an array.
+ * 
+ * @param {String} dir The directory name to load modules from
+ * @param {Boolean} recursive If true directories will be searched recursively
+ * @returns {Object[]} An array of all objects exported by the modules loaded
+ */
 function loader(dir, recursive) {
     if(recursive === undefined)
         recursive = true;

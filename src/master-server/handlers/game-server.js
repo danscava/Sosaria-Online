@@ -8,5 +8,5 @@ function selectGameServer(packet) {
 };
 
 module.exports = function(server) {
-    server.on("select-game-server", selectGameServer);
+    server.on("packetSelectGameServer", selectGameServer);
 };

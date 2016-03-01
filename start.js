@@ -8,7 +8,13 @@ if(process.argv.length !== 3) {
 
 var serviceName = process.argv[2];
 
-require("./src/lib/config")(serviceName);
+// Load the configuration and initialize process-wide services
+var cfg = require("./src/lib/config")(serviceName),
+    log = require("./src/lib/log"),
+    store = require("./src/lib/store");
+
+log.init(cfg.logPath);
+store.init(cfg.dbPath);
 
 var Server;
 
@@ -24,6 +30,7 @@ if(typeof Server !== "function") {
 }
 
 var server = new Server();
+server.start();
 
 function atExit(err) {
     if(err)

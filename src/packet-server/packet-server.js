@@ -13,18 +13,45 @@ var net = require("net"),
  * @constructor
  * @param {number[]} ipv4 The IPv4 address the server is to listen on as an
  *                        array of numbers. The Ultima Online client can only
- *                        handle IPv4 addresses, so we have to bind to one.
+ *                        handle IPv4 addresses, so we have to bind to one. If
+ *                        this is null, no listener will be started and the
+ *                        server will be in client-only mode.
  * @param {number}   port The TCP port number to bind to. Ultima Online only
  *                        uses TCP.
  */
 function PacketServer(ipv4, port){
     EventEmitter.call(this);
-    this.host = ipv4.join(".");
+    if(ipv4 !== null)
+        /** The hostname to bind to.
+         * @type {String}
+         */
+        this.host = ipv4.join(".");
+    else
+        this.host = null;
+    /** The port number to bind to.
+     * @type {Number}
+     */
     this.port = port;
+    /** The net.Server that drives the network I/O.
+     * @type {net.Server}
+     */
     this.server = null;
+    /** A queue of incomming packets waiting to be processed.
+     * @type {Packet[]}
+     */
     this.packetQueue = [];
+    /** The timer identifier of the packet queue processing timer.
+     * @type {Number}
+     */
     this.timer = null;
+    /** A map of all connected {@link NetState}s.
+     * @type {Object}
+     */
     this.netStates = {};
+    /** If true all input chunks will be dumped to the log. Defaults to false.
+     * @type {Boolean}
+     */
+    this.debug = false;
 };
 util.inherits(PacketServer, EventEmitter);
 
@@ -32,42 +59,44 @@ util.inherits(PacketServer, EventEmitter);
  */
 PacketServer.prototype.start = function(){
     var self = this;
-    this.server = net.Server((socket) => {
-        var state = new NetState(socket, self);
-        socket.netState = state;
-        state.uuid = uuid.v4();
-        this.netStates[uuid] = state;
-        
-        this.emit("netstate-connected", state);
-        
-        socket.setNoDelay();
-        
-        socket.setTimeout(15 * 1000, function(socket){
-            state.disconnect();
+    if(this.host !== null) {
+        this.server = net.Server((socket) => {
+            var state = new NetState(socket, self);
+            socket.netState = state;
+            state.uuid = uuid.v4();
+            this.netStates[uuid] = state;
+
+            this.emit("netstate-connected", state);
+
+            socket.setNoDelay();
+
+            socket.setTimeout(15 * 1000, function(socket){
+                state.disconnect();
+            });
+
+            socket.on("data", (chunk) => {
+                try {
+                    state.handleData(chunk);                
+                } catch(e) {
+                    log.error("Exception while processing data|" + e.stack);
+                }
+            });
+
+            socket.on("end", (socket) => {
+                state.disconnect();
+            });
+
+            socket.on("error", (socket) => {
+                state.disconnect();
+            });
+        }).listen({
+            host: self.host,
+            port: self.port,
+            exclusive: true
+        }, function() {
+            log.info("Packet server listening on " + self.host + ":" + self.port);
         });
-        
-        socket.on("data", (chunk) => {
-            try {
-                state.handleData(chunk);                
-            } catch(e) {
-                log.error("Exception while processing data|" + e.stack);
-            }
-        });
-        
-        socket.on("end", (socket) => {
-            state.disconnect();
-        });
-        
-        socket.on("error", (socket) => {
-            state.disconnect();
-        });
-    }).listen({
-        host: self.host,
-        port: self.port,
-        exclusive: true
-    }, function() {
-        log.info("Packet server listening on " + self.host + ":" + self.port);
-    });
+    }
     
     // 50 times per second stop all I/O and drain the packet queue
     this.timer = setInterval(() => { this.processQueue(); }, 20);
@@ -118,7 +147,15 @@ PacketServer.prototype.disconnect = function(netstate) {
  * @returns {NetState} The NetState object representing the client connection
  */
 PacketServer.prototype.connect = function(ipv4, port) {
-    var socket = net.connect(ipv4.join("."), port);
+    var socket = new net.Socket();
+    socket.connect({
+        host: ipv4.join("."),
+        port: port
+    });
+    socket.on("error", function(err) {
+        log.error("Client socket error|" + err.stack);
+    });
+    
     var state = new NetState(socket, this);
     socket.netState = state;
     state.isClient = true;

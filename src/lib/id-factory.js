@@ -3,6 +3,18 @@
 var ConstructorFactory = require("./constructor-factory"),
     util = require("util");
 
+/** A factory that loads all modules within a directory recursively and exposes
+ * them as constructor functions by name and ID. All modules must export a
+ * single constructor function as the module.exports object, and that function
+ * object must have a property named "id". This property may be of any type that
+ * supports equality comparison. All constructors must handle being called
+ * without arguments gracefully.
+ * 
+ * @param {String} dir The path to the directory to load modules from
+ * 
+ * @constructor
+ * @extends ConstructorFactory
+ */
 function IdFactory(dir) {
     ConstructorFactory.call(this, dir);
     
@@ -20,6 +32,12 @@ function IdFactory(dir) {
 }
 util.inherits(IdFactory, ConstructorFactory);
 
+/** Creates a new object by ID.
+ * 
+ * @param {Object} id The ID of the constructor to invoke. This must equal the
+ *                    "id" property of one of the constructors loaded by the
+ *                    constructor.
+ */
 IdFactory.prototype.createById = function(id) {
     var ctor = this.ctorsById[id];
     if(ctor === undefined)

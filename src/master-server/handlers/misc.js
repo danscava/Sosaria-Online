@@ -3,9 +3,9 @@
 var log = require("../../lib/log");
 
 function spyOnClient(packet) {
-    log.info("Recieved spy-on-client packet");
+    log.info("Recieved Spy on Client packet");
 };
 
 module.exports = function(emitter) {
-    emitter.on("spy-on-client", spyOnClient);
+    emitter.on("packetSpyOnClient", spyOnClient);
 };
