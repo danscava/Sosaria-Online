@@ -71,7 +71,7 @@ PacketServer.prototype.start = function(){
             socket.setNoDelay();
 
             socket.setTimeout(15 * 1000, function(socket){
-                state.disconnect();
+                self.disconnect(state);
             });
 
             socket.on("data", (chunk) => {
@@ -83,11 +83,11 @@ PacketServer.prototype.start = function(){
             });
 
             socket.on("end", (socket) => {
-                state.disconnect();
+                self.disconnect(state);
             });
 
             socket.on("error", (socket) => {
-                state.disconnect();
+                self.disconnect(state);
             });
         }).listen({
             host: self.host,
