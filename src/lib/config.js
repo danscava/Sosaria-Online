@@ -3,14 +3,26 @@
 var cfg = {};
 
 /** Exposes an interface for loading configuration data for the current process.
- * The first time this module is required it will resovle to a function which
- * takes a single parameter, the name of the configuration file in the config
- * directory to load. After the initial call all references to this module
- * will resolve to the object exported by that configuration file.
  * 
  * @module {Object} Config
  */
-module.exports = function(which) {
-    module.exports = require("../../config/" + which);
+
+/** Reloads the current configuration or loads a new one.
+ * 
+ * @param {String} which The path of the configuration file relative to the
+ *                       config directory. If undefined the current
+ *                       configuration will be reloaded.
+ */
+function reload(which) {
+    var path;
+    if(which === undefined)
+        path = module.exprts.__path;
+    else
+        path = "../../config/" + which;
+    module.exports = require(path);
+    module.exports.reload = reload;
+    module.exports.__path = path;
     return module.exports;
 };
+
+exports.reload = reload;

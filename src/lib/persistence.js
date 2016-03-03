@@ -16,7 +16,7 @@ var EventEmitter = require("events"),
 
 var cfg;
 var defaultCfg = {
-    activePath = "./save"
+    activePath: "./save"
 };
 var stores = {};
 var BUFFER_SIZE = 1024 * 1024 * 8; // 8MB max record length

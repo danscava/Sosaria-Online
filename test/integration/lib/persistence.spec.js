@@ -1,5 +1,6 @@
-require("../../../src/lib/config")("../test/integration/master-config");
-var cfg = require("../../../src/lib/config");
+"use strict";
+
+var cfg = require("../../../src/lib/config").reload("../test/integration/master-config"),
     uut = require("../../../src/lib/persistence");
 
 fdescribe("Persistence", function() {
@@ -8,5 +9,8 @@ fdescribe("Persistence", function() {
     });
     
     it("can initialize", function() {
+    });
+    it("can store a value", function() {
+        uut.store("test", "key", "value");
     });
 });

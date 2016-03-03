@@ -1,8 +1,6 @@
-require("../../../src/lib/config")("../test/integration/master-config");
-//require("../../packet-server-spy");
 var MasterServer = require("../../../src/master-server/master-server"),
     Client = require("../../client"),
-    cfg = require("../../../src/lib/config");
+    cfg = require("../../../src/lib/config").reload("../test/integration/master-config");
 
 describe("Login Process", function() {
     var master, client;
