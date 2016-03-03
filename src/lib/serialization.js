@@ -4,13 +4,14 @@
  * strings while performing some specific tasks that are needed for Sosaria-
  * Online. Objects serialized may have circular references. All objects
  * referenced must have had their constructors registerd with the {@link
- * OliveBranch#register} function.
+ * Serialization#register} function.
  * 
  * <pre>
  * Special properties and thier usage:
  * Σ U+03A3 UUID of the object.
  * Ψ U+03A8 Constructor name of the object.
  * Ω U+03A9 A string with this value represents the undefined value.
+ * Θ U+0398 A string beginning with this value represents an object pointer.
  * Π U+03A0 Do Not Persist Object. If a property with this name exists on an
  *           object, regardless of its value, the object will be omitted from
  *           the output stream. As a conveniance, this character is exported as
@@ -19,7 +20,7 @@
  *           the property is ommitted from the object when writting to the
  *           output stream.
  * <pre>
- * @module OliveBranch
+ * @module Serialization
  */
 
 var uuid = require("uuid"),
@@ -27,6 +28,7 @@ var uuid = require("uuid"),
 
 // Property names that *really* shouldn't conflict
 var DNPP = "$",
+    OPID = "Θ",
     DNPO = "Π",
     UUID = "Σ",
     CTOR = "Ψ",
@@ -34,6 +36,7 @@ var DNPP = "$",
 
 var ctors = {};
 var serializedObjects = {};
+var ctorFactory = {};
 var buff = null;
 
 /** Registers a constructor function. Note that constructors MUST have a globaly
@@ -50,11 +53,20 @@ function register(ctor) {
     ctors[name] = ctor;
 }
 
+/** The object structure of the JSON string returned from
+ * {@link module:Serialization#serialize}.
+ * 
+ * @typedef SerializedString
+ * @type {Ojbect}
+ * @property {String} root The root object's UUID
+ * @property {Object} data Every object in the graph, keyed by UUID
+ */
+
 /** Serialize an object graph into a string representation.
  * 
  * @param {Object} obj The object graph to serialize.
- * @returns {String} A string containing the serialized representation of the
- *                   object graph.
+ * @returns {SerializedString} A string containing the serialized representation
+ *                             of the object graph.
  */
 function serialize(obj) {
     serializedObjects = {};
@@ -62,23 +74,15 @@ function serialize(obj) {
         obj === null)
         throw new Error("serialize() called on a non-object");
     var root = _ser(obj);
-    if(root === undefined)
+    if(root === undefined ||
+        root.length === undefined ||
+        root.length < 1 ||
+        root.charAt(0) !== OPID)
         throw new Error("serialize() called on an object marked Do No Persist");
     return JSON.stringify({
-        r: root,
-        d: serializedObjects
+        root: root.substr(1),
+        data: serializedObjects
     });
-}
-
-/** Deserialize an object graph from a string representation.
- * 
- * @param {String} str The string representation of the object graph.
- * @returns {Object} The object graph with prototypes restored.
- */
-function deserialize(str) {
-    var data = JSON.parse(str);
-    serializedObjects = data.d;
-    
 }
 
 // Returns the serializeable form of a value, or undefined if the value is not
@@ -104,6 +108,8 @@ function _ser(val) {
 // Returns the uuid of the object in the serialization stream, or undefined if
 // the object is not serializable.
 function _obj(obj) {
+    var isArray = Array.isArray(obj);
+    
     // Check the Do Not Persist Object flag
     if(obj[DNPO] !== undefined)
         return undefined;
@@ -112,7 +118,7 @@ function _obj(obj) {
     var id = obj[UUID];
     if(id !== undefined &&
         serializedObjects[id] !== undefined)
-        return;
+        return OPID + id;
     
     // If the object has not been setup, do so now
     if(id === undefined) {
@@ -126,15 +132,26 @@ function _obj(obj) {
     }
     
     // Setup the serializable object
-    var out = {};
+    var out = isArray ? [] : {};
     out[UUID] = id;
-    out[CTOR] = obj.constructor.name;
+    
+    // Do not persist the constructor for base Objects and Arrays. We don't need
+    // to do anything special for them when resurecting.
+    var ctor = obj.constructor.name;
+    if(ctor !== "Object" &&
+        !isArray)
+        out[CTOR] = ctor;
+    
     serializedObjects[id] = out;
     
     // Process all object properties
-    for(var key in Object.keys(obj)) {
+    for(var key in obj) {
+        if(!obj.hasOwnProperty(key))
+            continue;
+        
         // Check Do Not Persist Property flag
-        if(key.charAt(0) === DNPP)
+        if(!isArray &&
+            key.charAt(0) === DNPP)
             continue;
         
         // Try to serialize the property
@@ -143,7 +160,79 @@ function _obj(obj) {
             out[key] = val;
     }
     
-    return id;
+    return OPID + id;
+}
+
+
+/** Deserialize an object graph from a string representation.
+ * 
+ * @param {String} str The string representation of the object graph.
+ * @param {Object} factory An object mapping constructor names to constructor
+ *                         functions. Note that constructors will not be passed
+ *                         any parameters.
+ * @returns {Object} The object graph with prototypes restored.
+ */
+function deserialize(str, factory) {
+    ctorFactory = factory;
+    var data = JSON.parse(str);
+    serializedObjects = data.data;
+    var rootObject = serializedObjects[data.root];
+    if(rootObject === undefined)
+        throw new Error("Unable to link root object");
+    for(var key in serializedObjects) {
+        if(!serializedObjects.hasOwnProperty(key))
+            continue;
+        _res(serializedObjects[key]);
+    }
+    return rootObject;
+}
+
+// Post-processes an object after deserialization
+function _res(obj) {
+    // Fix up the UUID property
+    Object.defineProperty(obj, UUID, {
+        configurable: false,
+        enumerable: false,
+        value: obj[UUID],
+        writable: false
+    });
+    
+    // Apply the constructor if nessecary
+    var ctor = obj[CTOR];
+    if(ctor !== undefined) {
+        // Fix up the property
+        Object.defineProperty(obj, CTOR, {
+            configurable: false,
+            enumerable: false,
+            value: ctor,
+            writable: false
+        });
+        
+        // Apply the constructor
+        var ctorFunc = ctorFactory[ctor];
+        if(ctorFunc === undefined)
+            throw new Error("Constructor " + ctor + " not found");
+        ctorFunc.call(obj);
+    }
+    
+    // Fix up any object refrences and undefined values
+    for(var key in obj) {
+        if(!obj.hasOwnProperty(key))
+            continue;
+        var prop = obj[key];
+        if(typeof prop === "string" &&
+            prop.length > 0) {
+            if(prop === UDEF) {
+                obj[key] = undefined;
+            } else if(prop.charAt(0) === OPID) {
+                var uuid = prop.substr(1);
+                var other = serializedObjects[uuid];
+                if(other === undefined)
+                    throw new Error("Unsatisfied object linkage to UUID " + uuid);
+                obj[key] = other;
+            }
+        }
+    }
 }
 
 exports.register = register;

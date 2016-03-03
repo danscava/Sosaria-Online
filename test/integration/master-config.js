@@ -11,5 +11,8 @@ module.exports = {
     ipv4: [127, 0, 0, 1],
     port: 2593,
     dbPath: null,
-    servers: [ "testcenter" ]
+    servers: [ "testcenter" ],
+    persistence: {
+        activePath: "test/integration/save"
+    }
 };
