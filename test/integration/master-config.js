@@ -13,6 +13,10 @@ module.exports = {
     dbPath: null,
     servers: [ "testcenter" ],
     persistence: {
-        activePath: "test/integration/save"
+        activePath: "test/integration/save",
+        pruneFrequency: 150,     // Milliseconds
+        prunePercent: 15,        // 15% of the cache pruned per cycle
+        maxCache: 1024 * 1024 * 32, // 32MB
+        timeToLive: 120         // Seconds
     }
 };
